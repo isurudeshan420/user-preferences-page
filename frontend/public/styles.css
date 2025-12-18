@@ -22,8 +22,8 @@ body {
   border-radius: 18px;
   overflow: hidden;
   box-shadow:
-    0 18px 45px rgba(15, 23, 42, 0.08),
-    0 0 0 1px rgba(148, 163, 184, 0.25);
+          0 18px 45px rgba(15, 23, 42, 0.08),
+          0 0 0 1px rgba(148, 163, 184, 0.25);
   background: #ffffff;
 }
 
@@ -65,4 +65,55 @@ body {
   color: #111827;
 }
 
+/* Error banner */
+.error-banner {
+  background: #fef2f2;
+  border-bottom: 1px solid #fecaca;
+  color: #7f1d1d;
+  padding: 10px 14px;
+  font-size: 13px;
+}
 
+.muted-hint {
+  color: #6b7280;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* Section spacing */
+.section-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: #111827;
+}
+
+.section-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 14px;
+  background: #ffffff;
+}
+
+/* Unsaved changes label */
+.status-pill {
+  display: inline-block;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  background: #f9fafb;
+}
+
+.status-pill.dirty {
+  background: #fff7ed;
+  border-color: #fed7aa;
+  color: #9a3412;
+}
+
+/* Mobile tweaks */
+@media (max-width: 768px) {
+  .side-nav {
+    display: none;
+  }
+}
