@@ -19,11 +19,12 @@ from django.urls import path, include
 from rest_framework import routers
 # from rest_framework.documentation import include_docs_urls
 # from django.conf.urls.static import static
-from myapp.views import UserProfileViewSet, UserPreferencesViewSet
+from myapp.views import UserProfileViewSet, UserPreferencesViewSet, AuthViewSet
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 # Create a router and register our viewset with it.
 router = routers.DefaultRouter()
 
+router.register(r'auth', AuthViewSet, basename='auth')
 router.register(r'users', UserProfileViewSet, basename='user')
 router.register(r'user-preferences', UserPreferencesViewSet, basename='user-preferences')
 

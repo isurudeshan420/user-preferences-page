@@ -1,7 +1,159 @@
 import { state, setDirty } from "./state.js";
-import { showError } from "./helpers.js";
+import { showError, toastOk, toastFail } from "./helpers.js";
 import { bindDirtyTracking } from "./forms.js";
 import { buildMenuPopup, buildLayout } from "./ui/ui.js";
+
+function hasToken() {
+    return !!localStorage.getItem("auth_token_v1");
+}
+
+function openAuthWindow(onSuccess) {
+    const win = webix.ui({
+        view: "window",
+        id: "authWin",
+        modal: true,
+        position: "center",
+        width: 520,
+        head: "Authentication",
+        body: {
+            rows: [
+                {
+                    view: "tabview",
+                    cells: [
+                        {
+                            header: "Sign In",
+                            body: {
+                                view: "form",
+                                id: "signinForm",
+                                padding: 16,
+                                elementsConfig: { labelPosition: "top" },
+                                elements: [
+                                    { view: "text", name: "username", label: "Username", required: true },
+                                    { view: "text", name: "password", label: "Password", type: "password", required: true },
+                                    { height: 10 },
+                                    {
+                                        cols: [
+                                            {},
+                                            {
+                                                view: "button",
+                                                value: "Sign In",
+                                                css: "webix_primary",
+                                                width: 140,
+                                                click: async function () {
+                                                    const form = $$("signinForm");
+                                                    if (!form.validate()) return;
+
+                                                    const btn = this;
+                                                    btn.disable();
+                                                    try {
+                                                        const v = form.getValues();
+                                                        await PreferencesAPI.login({ username: v.username, password: v.password });
+                                                        toastOk("Signed in.");
+                                                        $$("authWin").close();
+                                                        onSuccess();
+                                                    } catch (e) {
+                                                        toastFail(e && e.message ? e.message : "Sign in failed.");
+                                                    } finally {
+                                                        btn.enable();
+                                                    }
+                                                },
+                                            },
+                                        ],
+                                    },
+                                ],
+                                rules: {
+                                    username: webix.rules.isNotEmpty,
+                                    password: webix.rules.isNotEmpty,
+                                },
+                            },
+                        },
+                        {
+                            header: "Sign Up",
+                            body: {
+                                view: "form",
+                                id: "signupForm",
+                                padding: 16,
+                                elementsConfig: { labelPosition: "top" },
+                                elements: [
+                                    { view: "text", name: "username", label: "Username", required: true },
+                                    { view: "text", name: "email", label: "Email (optional)" },
+                                    { view: "text", name: "password", label: "Password", type: "password", required: true },
+                                    { height: 10 },
+                                    {
+                                        cols: [
+                                            {},
+                                            {
+                                                view: "button",
+                                                value: "Create Account",
+                                                css: "webix_primary",
+                                                width: 160,
+                                                click: async function () {
+                                                    const form = $$("signupForm");
+                                                    if (!form.validate()) return;
+
+                                                    const btn = this;
+                                                    btn.disable();
+                                                    try {
+                                                        const v = form.getValues();
+                                                        await PreferencesAPI.signup({
+                                                            username: v.username,
+                                                            email: v.email,
+                                                            password: v.password,
+                                                        });
+                                                        toastOk("Account created and signed in.");
+                                                        $$("authWin").close();
+                                                        onSuccess();
+                                                    } catch (e) {
+                                                        toastFail(e && e.message ? e.message : "Sign up failed.");
+                                                    } finally {
+                                                        btn.enable();
+                                                    }
+                                                },
+                                            },
+                                        ],
+                                    },
+                                ],
+                                rules: {
+                                    username: webix.rules.isNotEmpty,
+                                    password: webix.rules.isNotEmpty,
+                                },
+                            },
+                        },
+                    ],
+                },
+            ],
+        },
+    });
+
+    win.show();
+}
+
+async function loadPreferences() {
+    try {
+        webix.extend($$("root"), webix.ProgressBar);
+        $$("root").showProgress({ type: "icon" });
+
+        state.loadedPreferences = await PreferencesAPI.getPreferences();
+
+        $$("form_account").setValues(state.loadedPreferences.account, true);
+        $$("form_notifications").setValues(state.loadedPreferences.notifications, true);
+        $$("form_theme").setValues(state.loadedPreferences.theme, true);
+        $$("form_privacy").setValues(state.loadedPreferences.privacy, true);
+        $$("form_password").setValues(
+            { currentPassword: "", newPassword: "", confirmPassword: "" },
+            true
+        );
+
+        setDirty("account", false);
+        setDirty("notifications", false);
+        setDirty("theme", false);
+        setDirty("privacy", false);
+    } catch (e) {
+        showError("Failed to load preferences. Please refresh and try again.");
+    } finally {
+        $$("root").hideProgress();
+    }
+}
 
 export function initUserPreferencesPage() {
     // Build popup + layout
@@ -40,33 +192,16 @@ export function initUserPreferencesPage() {
     // Initial selection
     $$("categoryList").select("account");
 
-    // Load preferences
     (async function init() {
-        try {
-            webix.extend($$("root"), webix.ProgressBar);
-            $$("root").showProgress({ type: "icon" });
+        applyResponsive();
 
-            state.loadedPreferences = await PreferencesAPI.getPreferences();
-
-            $$("form_account").setValues(state.loadedPreferences.account, true);
-            $$("form_notifications").setValues(state.loadedPreferences.notifications, true);
-            $$("form_theme").setValues(state.loadedPreferences.theme, true);
-            $$("form_privacy").setValues(state.loadedPreferences.privacy, true);
-            $$("form_password").setValues(
-                { currentPassword: "", newPassword: "", confirmPassword: "" },
-                true
-            );
-
-            setDirty("account", false);
-            setDirty("notifications", false);
-            setDirty("theme", false);
-            setDirty("privacy", false);
-
-            applyResponsive();
-        } catch (e) {
-            showError("Failed to load preferences. Please refresh and try again.");
-        } finally {
-            $$("root").hideProgress();
+        if (!hasToken()) {
+            openAuthWindow(async function () {
+                await loadPreferences();
+            });
+            return;
         }
+
+        await loadPreferences();
     })();
 }
