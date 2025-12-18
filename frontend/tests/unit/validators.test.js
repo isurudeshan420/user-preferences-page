@@ -1,4 +1,4 @@
-const Validators = require("../../validators.js");
+const Validators = require("../../src/utils/validators.js");
 
 test("strongPassword accepts valid password", () => {
     expect(Validators.strongPassword("Abcdefg1")).toBe(true);

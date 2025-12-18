@@ -2,9 +2,8 @@
   "name": "frontend",
   "version": "1.0.0",
   "description": "",
-  "main": "main.js",
   "scripts": {
-    "start": "npx live-server --port=5173 --open=./index.html",
+    "start": "npx live-server --port=5173 --open=./public/index.html",
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "jest",
     "test:e2e": "playwright test"
