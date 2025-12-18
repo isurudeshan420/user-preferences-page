@@ -4,9 +4,9 @@
   "description": "",
   "scripts": {
     "start": "npx live-server --port=5173 --open=./public/index.html",
-    "test": "npm run test:unit && npm run test:e2e",
-    "test:unit": "jest",
-    "test:e2e": "playwright test"
+    "test:unit": "jest --config ./config/jest.config.cjs",
+    "test:e2e": "playwright test --config ./config/playwright.config.js",
+    "test": "npm run test:unit && npm run test:e2e"
   },
   "keywords": [],
   "author": "",
